@@ -4,9 +4,6 @@ from PIL import Image
 wtrmrk = Image.open("watermark.png")
 im = Image.open("mynft.png")
 
-# print(im.format, im.size, im.mode)
-# im.show()
-
 # Use this to select entire image 'uploaded' by user (add watermark on top later)
 entire_image = (0, 0, im.size[0], im.size[1])
 
@@ -34,5 +31,5 @@ watermark_layer.paste(im=wtrmrk, box=bottom_right, mask=wtrmrk)
 image_blend = Image.blend(canvas, watermark_layer, .15)
 image_blend.show()
 
-# canvas.save("watermarked_image.png")
+image_blend.save("watermarked_image.png")
 

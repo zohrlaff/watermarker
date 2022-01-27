@@ -32,4 +32,3 @@ image_blend = Image.blend(canvas, watermark_layer, .15)
 image_blend.show()
 
 image_blend.save("watermarked_image.png")
-

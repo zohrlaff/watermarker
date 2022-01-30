@@ -1,8 +1,7 @@
-from tkinter import *
 from PIL import Image
 
 wtrmrk = Image.open("watermark.png")
-im = Image.open("mynft.png")
+im = Image.open(open_file())
 
 # Use this to select entire image 'uploaded' by user (add watermark on top later)
 entire_image = (0, 0, im.size[0], im.size[1])
@@ -32,3 +31,5 @@ image_blend = Image.blend(canvas, watermark_layer, .15)
 image_blend.show()
 
 image_blend.save("watermarked_image.png")
+
+# TODO 1. GUI

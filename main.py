@@ -2,44 +2,56 @@ from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from PIL import Image
 
+
 # TODO 1. Document, Refactor, Tweak
+# TODO 2. Let user choose an image for watermarking
 
 def open_file():
+    """
+
+    :return:
+    """
+
     global image_blend
 
-    # Capture file path
+    # Capture file path for the user's choice
     file_name = askopenfilename(title="Select an image", initialdir="C:\\",
                                 filetypes=[("All Files", "*.*"), ("Image Files", "*.png")])
 
-    wtrmrk = Image.open("watermark.png")
+    # Location/name of image to be used as watermark
+    watermark = Image.open("watermark.png")
+    # User's chosen image object generation
     im = Image.open(file_name)
 
-    # Use this to select entire image 'uploaded' by user (add watermark on top later)
-    entire_image = (0, 0, im.size[0], im.size[1])
+    # Image size unpacking
+    x_size, y_size = im.size
 
-    # Center of image
-    xsize, ysize = im.size
+    # Locations for watermark
+    # TODO 3. Make all of this trash below cleaner vvvvvvvvv
+    watermark_grid = []
+    x_center, y_center = (x_size // 2 - 100), (y_size // 2)
+    top_left = (x_size // 4 - 100, y_size // 4)
+    top_right = (round(x_size * .75 - 100), y_size // 4)
+    bottom_left = (x_size // 4 - 100, round(y_size * .75))
+    bottom_right = (round(x_size * .75 - 100), round(y_size * .75))
 
-    xcenter, ycenter = (xsize // 2 - 100), (ysize // 2)
-    top_left = (xsize // 4 - 100, ysize // 4)
-    top_right = (round(xsize * .75 - 100), ysize // 4)
-    bottom_left = (xsize // 4 - 100, round(ysize * .75))
-    bottom_right = (round(xsize * .75 - 100), round(ysize * .75))
+    # Creation of blank placeholder images
+    placeholder_image = Image.new("RGBA", im.size, (255, 255, 255, 0))
+    watermark_layer = Image.new("RGBA", im.size, (255, 255, 255, 1))
 
-    canvas = Image.new("RGBA", im.size, (255, 255, 255, 0))
-    watermark_layer = Image.new("RGBA", im.size, (255, 255, 255, 0))
+    # Paste user's image to blank canvas
+    placeholder_image.paste(im=im)
 
-    canvas.paste(im=im)
+    # Add watermarks to user's image
+    watermark_layer.paste(im=watermark, box=(x_center, y_center), mask=watermark)
+    watermark_layer.paste(im=watermark, box=top_left, mask=watermark)
+    watermark_layer.paste(im=watermark, box=top_right, mask=watermark)
+    watermark_layer.paste(im=watermark, box=bottom_left, mask=watermark)
+    watermark_layer.paste(im=watermark, box=bottom_right, mask=watermark)
 
-    watermark_layer.paste(im=wtrmrk, box=(xcenter, ycenter), mask=wtrmrk)
-    watermark_layer.paste(im=wtrmrk, box=top_left, mask=wtrmrk)
-    watermark_layer.paste(im=wtrmrk, box=top_right, mask=wtrmrk)
-    watermark_layer.paste(im=wtrmrk, box=bottom_left, mask=wtrmrk)
-    watermark_layer.paste(im=wtrmrk, box=bottom_right, mask=wtrmrk)
-
-    image_blend = Image.blend(canvas, watermark_layer, .2)
-    # image_blend.show()
-
+    # Blend both images for 'watermarked' result
+    image_blend = Image.blend(placeholder_image, watermark_layer, .1)
+    # Save image to local directory
     image_blend.save("watermarked_image.png")
 
 

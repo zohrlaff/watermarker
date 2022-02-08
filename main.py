@@ -1,68 +1,83 @@
+import random
 from tkinter import *
 from tkinter.filedialog import askopenfilename, asksaveasfilename
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 
-# TODO 1. Document, Refactor, Tweak
-# TODO 2. Let user choose an image for watermarking
+# TODO 1. Document
 
-def open_file():
+def load_file():
     """
 
     :return:
     """
 
-    global image_blend
-
     # Capture file path for the user's choice
     file_name = askopenfilename(title="Select an image", initialdir="C:\\",
                                 filetypes=[("All Files", "*.*"), ("Image Files", "*.png")])
-
-    # Location/name of image to be used as watermark
-    watermark = Image.open("watermark.png")
-    # User's chosen image object generation
+    #
     im = Image.open(file_name)
+    im.save("user_file.png")
+
+
+def edit_file():
+    """
+
+    :return:
+    """
+
+    # User's chosen image object generation
+    im = Image.open("user_file.png")
+
+    # Watermark text creation
+    # Layer for watermark text
+    watermark_layer = Image.new("RGBA", im.size, (255, 255, 255, 0))
+    # Capture text from GUI Entry widget and define font
+    watermark_text = watermark_var.get()
+    watermark_font = ImageFont.truetype("arial.ttf", 24)
+
+    # Draw object for watermark text
+    draw_text = ImageDraw.Draw(watermark_layer)
 
     # Image size unpacking
     x_size, y_size = im.size
 
-    # Locations for watermark
-    # TODO 3. Make all of this trash below cleaner vvvvvvvvv
-    watermark_grid = []
-    x_center, y_center = (x_size // 2 - 100), (y_size // 2)
-    top_left = (x_size // 4 - 100, y_size // 4)
-    top_right = (round(x_size * .75 - 100), y_size // 4)
-    bottom_left = (x_size // 4 - 100, round(y_size * .75))
-    bottom_right = (round(x_size * .75 - 100), round(y_size * .75))
+    # Margins/limits for watermarks
+    y_margin_min, y_margin_max = (int(y_size * .15), int(y_size - y_size * .15))
+    x_margin_min, x_margin_max = (int(x_size * .10), int(x_size - x_size * .10))
 
-    # Creation of blank placeholder images
-    placeholder_image = Image.new("RGBA", im.size, (255, 255, 255, 0))
-    watermark_layer = Image.new("RGBA", im.size, (255, 255, 255, 1))
+    # Watermark locations
+    y = y_margin_min
+    for _ in range(8):
+        x = random.randint(x_margin_min, x_margin_max)
+        # y = random.randint(y_margin_min, y_margin_max)
+        # SOMETHING HERE IS BROKEN
+        draw_text.text((x, y), watermark_text, fill=(233, 233, 233, 125), font=watermark_font)
+        y += random.randint(y, (y_size // 9))
 
-    # Paste user's image to blank canvas
-    placeholder_image.paste(im=im)
+    # Blank user image sized layer to copy image to
+    image_copy = Image.new("RGBA", im.size, (255, 255, 255, 0))
+    image_copy.paste(im=im)
 
-    # Add watermarks to user's image
-    watermark_layer.paste(im=watermark, box=(x_center, y_center), mask=watermark)
-    watermark_layer.paste(im=watermark, box=top_left, mask=watermark)
-    watermark_layer.paste(im=watermark, box=top_right, mask=watermark)
-    watermark_layer.paste(im=watermark, box=bottom_left, mask=watermark)
-    watermark_layer.paste(im=watermark, box=bottom_right, mask=watermark)
-
-    # Blend both images for 'watermarked' result
-    image_blend = Image.blend(placeholder_image, watermark_layer, .1)
-    # Save image to local directory
+    # Blend watermark layer and user image, save locally
+    image_blend = Image.alpha_composite(image_copy, watermark_layer)
     image_blend.save("watermarked_image.png")
 
 
 def save_file():
-    watermarked_image = asksaveasfilename(title="Save watermarked image", confirmoverwrite=True,
-                                          defaultextension=".png",
-                                          initialfile="watermarked_image.png", initialdir="C:\\",
-                                          filetypes=[("PNG File", "*.png"), ("JPG File", "*.jpg"),
-                                                     ("BMP File", "*.bmp"),
-                                                     ("All Files", "*.*")])
-    image_blend.save(f"{watermarked_image}")
+    """
+
+    :return:
+    """
+
+    watermarked_image_location = asksaveasfilename(title="Save watermarked image", confirmoverwrite=True,
+                                                   defaultextension=".png",
+                                                   initialfile="watermarked_image.png", initialdir="C:\\",
+                                                   filetypes=[("PNG File", "*.png"), ("JPG File", "*.jpg"),
+                                                              ("BMP File", "*.bmp"),
+                                                              ("All Files", "*.*")])
+    im = Image.open("watermarked_image.png")
+    im.save(watermarked_image_location)
 
 
 window = Tk()
@@ -78,8 +93,18 @@ canvas.pack()
 # Load image section
 load_title = Label(text="Choose Image")
 load_title.pack()
-load_button = Button(text="Open", command=open_file)
+load_button = Button(text="Open", command=load_file)
 load_button.pack()
+
+# Watermark text entry
+watermark_label = Label(text="Watermark Text")
+watermark_label.pack()
+
+watermark_var = StringVar()
+watermark_user_text = Entry(textvariable=watermark_var)
+watermark_select = Button(text="Select", command=edit_file)
+watermark_user_text.pack()
+watermark_select.pack()
 
 # Save image section
 save_title = Label(text="Save")

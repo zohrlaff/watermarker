@@ -43,17 +43,17 @@ def edit_file():
     x_size, y_size = im.size
 
     # Margins/limits for watermarks
-    y_margin_min, y_margin_max = (int(y_size * .15), int(y_size - y_size * .15))
+    y_margin_min, y_margin_max = (int(y_size * .5), int(y_size - y_size * .5))
     x_margin_min, x_margin_max = (int(x_size * .10), int(x_size - x_size * .10))
 
     # Watermark locations
-    y = y_margin_min
-    for _ in range(8):
+    y_range = []
+    for r in range(0, y_size, y_size // 8):
+        y_range.append(r)
+
+    for i in range(8):
         x = random.randint(x_margin_min, x_margin_max)
-        # y = random.randint(y_margin_min, y_margin_max)
-        # SOMETHING HERE IS BROKEN
-        draw_text.text((x, y), watermark_text, fill=(233, 233, 233, 125), font=watermark_font)
-        y += random.randint(y, (y_size // 9))
+        draw_text.text((x, y_range[i]), watermark_text, fill=(233, 233, 233, 125), font=watermark_font)
 
     # Blank user image sized layer to copy image to
     image_copy = Image.new("RGBA", im.size, (255, 255, 255, 0))

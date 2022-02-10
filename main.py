@@ -1,10 +1,11 @@
 import random
 from tkinter import *
+from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from PIL import Image, ImageDraw, ImageFont
 
 
-# TODO 1. Document
+# TODO 2. Document
 
 def load_file():
     """
@@ -80,9 +81,16 @@ def save_file():
     im.save(watermarked_image_location)
 
 
+# TODO 1. Finish GUI, integrate Ttk theme for modern look
+
 window = Tk()
-window.title("Watermarker")
-window.config()
+window.title("Image Watermarker v1.0")
+big_frame = ttk.Frame(window)
+big_frame.pack(fill="both", expand=True)
+
+# GUI Theme settings
+window.tk.call("source", "sun-valley.tcl")
+window.tk.call("set_theme", "light")
 
 # Logo section
 canvas = Canvas(width=500, height=100, bg="white")
@@ -93,23 +101,23 @@ canvas.pack()
 # Load image section
 load_title = Label(text="Choose Image")
 load_title.pack()
-load_button = Button(text="Open", command=load_file)
-load_button.pack()
+load_button = ttk.Button(text="Open", command=load_file)
+load_button.pack(pady=(0, 15))
 
 # Watermark text entry
 watermark_label = Label(text="Watermark Text")
 watermark_label.pack()
 
 watermark_var = StringVar()
-watermark_user_text = Entry(textvariable=watermark_var)
-watermark_select = Button(text="Select", command=edit_file)
+watermark_user_text = ttk.Entry(textvariable=watermark_var)
+watermark_select = ttk.Button(text="Stamp Text", command=edit_file)
 watermark_user_text.pack()
-watermark_select.pack()
+watermark_select.pack(pady=(0, 15))
 
 # Save image section
 save_title = Label(text="Save")
 save_title.pack()
-save_button = Button(text="Save", command=save_file)
-save_button.pack()
+save_button = ttk.Button(text="Save", command=save_file)
+save_button.pack(pady=(0, 15))
 
 window.mainloop()

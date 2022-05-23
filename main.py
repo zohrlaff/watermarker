@@ -3,19 +3,19 @@ from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename, asksaveasfilename
 from PIL import Image, ImageDraw, ImageFont
+import os
 
 
 # TODO 2. Document
 
 def load_file():
     """
-
-    :return:
+    Loads file for manipulation. File is saved as 'user_file.png' by default in local program directory.
     """
 
     # Capture file path for the user's choice
     file_name = askopenfilename(title="Select an image", initialdir="C:\\",
-                                filetypes=[("All Files", "*.*"), ("Image Files", "*.png")])
+                                filetypes=[("Image Files", ["*.png", "*.jpg", "*.jpeg"]), ("All Files", "*.*")])
     #
     im = Image.open(file_name)
     im.save("user_file.png")
@@ -23,19 +23,22 @@ def load_file():
 
 def edit_file():
     """
+    Manipulates image selected by user for watermarking.
 
-    :return:
+    An empty canvas layer is created, the user's chosen text is captured, the dimensions of the user image are
+    calculated and boundaries are set, the image is divided to create the plot points for each watermark,
+    each watermark is drawn on the previously empty canvas layer, and finally both layers are combined into one.
     """
 
     # User's chosen image object generation
     im = Image.open("user_file.png")
 
-    # Watermark text creation
+    # --- Watermark text creation ---#
     # Layer for watermark text
     watermark_layer = Image.new("RGBA", im.size, (255, 255, 255, 0))
     # Capture text from GUI Entry widget and define font
     watermark_text = watermark_var.get()
-    watermark_font = ImageFont.truetype("arial.ttf", 24)
+    watermark_font = ImageFont.truetype("calibri.ttf", 40)
 
     # Draw object for watermark text
     draw_text = ImageDraw.Draw(watermark_layer)
@@ -44,31 +47,31 @@ def edit_file():
     x_size, y_size = im.size
 
     # Margins/limits for watermarks
-    y_margin_min, y_margin_max = (int(y_size * .5), int(y_size - y_size * .5))
-    x_margin_min, x_margin_max = (int(x_size * .10), int(x_size - x_size * .10))
+    y_margin_min, y_margin_max = (int(y_size * .10), int(y_size - (y_size * .05)))
+    x_margin_min, x_margin_max = (int(x_size * .05), int(x_size - (x_size * .05)))
 
-    # Watermark locations
-    y_range = []
-    for r in range(0, y_size, y_size // 8):
-        y_range.append(r)
+    # Locations for watermarks
+    y_range = [y_plot for y_plot in range(y_margin_min, y_margin_max, y_size // 12)]
+    x_range = [x_plot for x_plot in range(x_margin_min, x_margin_max, x_size // 12)]
 
-    for i in range(8):
-        x = random.randint(x_margin_min, x_margin_max)
-        draw_text.text((x, y_range[i]), watermark_text, fill=(233, 233, 233, 125), font=watermark_font)
+    # Image 'stamping' with watermarks
+    for r in range(len(y_range)):
+        x = random.choice(x_range)
+        draw_text.text((x, y_range[r]), watermark_text, fill=(230, 230, 230, 128), font=watermark_font)
+        x_range.pop(x_range.index(x))
 
-    # Blank user image sized layer to copy image to
+    # Blank user-image-sized layer to copy image to
     image_copy = Image.new("RGBA", im.size, (255, 255, 255, 0))
     image_copy.paste(im=im)
 
-    # Blend watermark layer and user image, save locally
+    # Blend watermark layer and user image, and save locally
     image_blend = Image.alpha_composite(image_copy, watermark_layer)
     image_blend.save("watermarked_image.png")
 
 
 def save_file():
     """
-
-    :return:
+    Watermarked image is saved to the user's location of choice.
     """
 
     watermarked_image_location = asksaveasfilename(title="Save watermarked image", confirmoverwrite=True,
@@ -81,10 +84,11 @@ def save_file():
     im.save(watermarked_image_location)
 
 
-# TODO 1. Finish GUI, integrate Ttk theme for modern look
+# --- GUI Section ---#
 
 window = Tk()
 window.title("Image Watermarker v1.0")
+
 big_frame = ttk.Frame(window)
 big_frame.pack(fill="both", expand=True)
 
@@ -93,15 +97,13 @@ window.tk.call("source", "sun-valley.tcl")
 window.tk.call("set_theme", "light")
 
 # Logo section
-canvas = Canvas(width=500, height=100, bg="white")
+canvas = Canvas(width=500, height=100)
 logo_img = PhotoImage(file="logo.png")
 canvas.create_image(250, 50, image=logo_img)
 canvas.pack()
 
 # Load image section
-load_title = Label(text="Choose Image")
-load_title.pack()
-load_button = ttk.Button(text="Open", command=load_file)
+load_button = ttk.Button(text="Choose Image", command=load_file)
 load_button.pack(pady=(0, 15))
 
 # Watermark text entry
@@ -115,9 +117,11 @@ watermark_user_text.pack()
 watermark_select.pack(pady=(0, 15))
 
 # Save image section
-save_title = Label(text="Save")
-save_title.pack()
-save_button = ttk.Button(text="Save", command=save_file)
+save_button = ttk.Button(text="Save Watermarked Image", command=save_file)
 save_button.pack(pady=(0, 15))
 
 window.mainloop()
+
+# Delete locally saved files after program closes
+os.remove("user_file.png")
+os.remove("watermarked_image.png")

@@ -6,8 +6,6 @@ from PIL import Image, ImageDraw, ImageFont
 import os
 
 
-# TODO 2. Document
-
 def load_file():
     """
     Loads file for manipulation. File is saved as 'user_file.png' by default in local program directory.
